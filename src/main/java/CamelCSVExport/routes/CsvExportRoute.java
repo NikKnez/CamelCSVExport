@@ -35,7 +35,9 @@ public class CsvExportRoute extends RouteBuilder {
         from("direct:exportCandidates")
                 .log("Starting CSV export process")
                 .process(exchange -> {
-                    List<Candidate> candidateData = candidateService.getCandidatesForCsvExport();
+                    Candidate searchCriteria = exchange.getIn().getBody(Candidate.class);
+
+                    List<Candidate> candidateData = candidateService.search(searchCriteria);
                     StringBuilder csvContent = new StringBuilder();
 
                     csvContent.append("ID,First Name,Last Name,JMBG,Year of Birth,Email,Phone,Notes,Employed After Competition\n");

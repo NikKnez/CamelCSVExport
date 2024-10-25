@@ -55,18 +55,37 @@ public class CandidateController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/search")
-    public List<Candidate> searchCandidates(@RequestBody Candidate searchCriteria) {
+    @GetMapping("/search")
+    public List<Candidate> searchCandidates(
+            @RequestParam(required = false) String jmbg,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean employedAfterCompetition) {
+        Candidate searchCriteria = new Candidate();
+        searchCriteria.setJmbg(jmbg);
+        searchCriteria.setEmail(email);
+        searchCriteria.setEmployedAfterCompetition(employedAfterCompetition != null && employedAfterCompetition);
+
         return candidateDao.search(searchCriteria);
     }
 
     @GetMapping("/download")
-    public ResponseEntity<byte[]> exportCandidates() {
-        byte[] csvContent = producerTemplate.requestBody("direct:exportCandidates", null, byte[].class);
+    public ResponseEntity<byte[]> exportCandidates(
+            @RequestParam(required = false) String jmbg,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean employedAfterCompetition) {
+
+        Candidate searchCriteria = new Candidate();
+        searchCriteria.setJmbg(jmbg);
+        searchCriteria.setEmail(email);
+        searchCriteria.setEmployedAfterCompetition(employedAfterCompetition);
+
+        byte[] csvContent = producerTemplate.requestBody("direct:exportCandidates", searchCriteria, byte[].class);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=candidates.csv")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(csvContent);
     }
+
+
 }
