@@ -37,4 +37,5 @@ public class Candidate {
     public Object isEmployedAfterCompetition() {
         return employedAfterCompetition;
     }
+
 }

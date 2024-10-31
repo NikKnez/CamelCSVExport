@@ -2,16 +2,22 @@ package CamelCSVExport.DAO;
 
 import CamelCSVExport.mapper.CandidateRowMapper;
 import CamelCSVExport.model.Candidate;
+import CamelCSVExport.model.SearchCriteria;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Repository
 public class CandidateDao {
     private final JdbcTemplate jdbcTemplate;
+    private static final Logger logger = LoggerFactory.getLogger(CandidateDao.class);
+
 
     private List<Candidate> candidates;
 
@@ -20,14 +26,33 @@ public class CandidateDao {
         this.candidates = findAll();
     }
 
-    public List<Candidate> search(Candidate searchCriteria) {
-        return candidates.stream()
-                .filter(candidate ->
-                        (searchCriteria.getJmbg() == null || candidate.getJmbg().equals(searchCriteria.getJmbg())) &&
-                                (searchCriteria.getEmail() == null || candidate.getEmail().equalsIgnoreCase(searchCriteria.getEmail())) &&
-                                (candidate.isEmployedAfterCompetition() == searchCriteria.isEmployedAfterCompetition())
-                )
-                .collect(Collectors.toList());
+
+    public List<Candidate> search(SearchCriteria searchCriteria) {
+        StringBuilder sql = new StringBuilder("SELECT id, first_name, last_name, jmbg, year_of_birth, email, phone, notes, employed_after_competition, data_update FROM candidates WHERE 1=1");
+
+        List<Object> params = new ArrayList<>();
+
+        if (searchCriteria.getJmbg() != null && !searchCriteria.getJmbg().isEmpty()) {
+            sql.append(" AND jmbg = ?");
+            params.add(searchCriteria.getJmbg());
+        }
+
+        if (searchCriteria.getEmail() != null && !searchCriteria.getEmail().isEmpty()) {
+            sql.append(" AND email = ?");
+            params.add(searchCriteria.getEmail());
+        }
+
+        if (searchCriteria.getEmployedAfterCompetition() != null) {
+            sql.append(" AND employed_after_competition = ?");
+            params.add(searchCriteria.getEmployedAfterCompetition());
+        }
+
+//        logger.info("Executing SQL: {} with parameters: {}", sql, params);
+//        List<Candidate> results = jdbcTemplate.query(sql.toString(), params.toArray(), new CandidateRowMapper());
+//        logger.info("Search Results: {}", results);
+//        return results;
+
+        return jdbcTemplate.query(sql.toString(), params.toArray(), new CandidateRowMapper());
     }
 
     public List<Candidate> findAll() {
@@ -47,7 +72,12 @@ public class CandidateDao {
 
     public void update(Candidate candidate) {
         String sql = "UPDATE candidates SET first_name = ?, last_name = ?, jmbg = ?, year_of_birth = ?, email = ?, phone = ?, notes = ?, employed_after_competition = ?, data_update = ? WHERE id = ?";
-        jdbcTemplate.update(sql, candidate.getFirstName(), candidate.getLastName(), candidate.getJmbg(), candidate.getYearOfBirth(), candidate.getEmail(), candidate.getPhone(), candidate.getNotes(), candidate.getEmployedAfterCompetition(), new Date(), candidate.getId());
+        try {
+            jdbcTemplate.update(sql, candidate.getFirstName(), candidate.getLastName(), candidate.getJmbg(), candidate.getYearOfBirth(), candidate.getEmail(), candidate.getPhone(), candidate.getNotes(), candidate.getEmployedAfterCompetition(), new Date(), candidate.getId());
+        } catch (DataAccessException e) {
+            logger.error("Failed to update candidate with ID {}: {}", candidate.getId(), e.getMessage());
+            throw e;
+        }
     }
 
     public void delete(Long id) {
@@ -69,4 +99,6 @@ public class CandidateDao {
         String sql = "SELECT id, first_name, last_name, jmbg, year_of_birth, email, phone, notes, employed_after_competition, data_update FROM candidates WHERE employed_after_competition = ?";
         return jdbcTemplate.query(sql, new Object[]{employedAfterCompetition}, new CandidateRowMapper());
     }
+
+
 }
