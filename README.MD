@@ -108,6 +108,6 @@ The backend will be available at http://localhost:8080.
 Contributions are welcome! Please fork the repository and create a pull request.
 
 ## Licence
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/NikKnez/CamelCSVExport?tab=MIT-1-ov-file) file for details.
 
 **Developed by [NikKnez](https://github.com/NikKnez)**
