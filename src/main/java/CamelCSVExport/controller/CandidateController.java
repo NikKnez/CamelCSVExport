@@ -98,7 +98,7 @@ public class CandidateController {
         byte[] csvContent = producerTemplate.requestBody("direct:exportCandidates", searchCriteria, byte[].class);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=candidates.csv")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=filtered_candidates.csv")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(csvContent);
     }
