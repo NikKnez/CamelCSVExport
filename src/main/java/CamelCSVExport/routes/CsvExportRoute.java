@@ -73,4 +73,8 @@ public class CsvExportRoute extends RouteBuilder {
         }
         return csvContent.toString();
     }
+
+    private String safeValue(String value) {
+        return value == null ? "" : value;
+    }
 }

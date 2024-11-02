@@ -10,7 +10,7 @@ public class SearchCriteria {
     private String email;
     private Boolean employedAfterCompetition;
 
-    private boolean isValidEmail(String email) {
+    boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
         if (email == null) {
